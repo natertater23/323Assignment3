@@ -1,10 +1,11 @@
-#include "pch.h"
+//#include "pch.h"
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <type_traits>
+#include <vector>
 #include <string>
 
 using namespace std;
@@ -21,7 +22,8 @@ ofstream myfile;
 //---------------------------PROJECT 3-------------------------------------
 //INSTRUCTION ARRAY 
 //SYMBOL TABLE
-char symTable[3][1000];
+
+vector<string> idList, typesList;
 char identifierArr[1000];
 
 //MEMORY ADDRESS VARIABLE
@@ -30,36 +32,18 @@ int memoryAdd = 5000;
 
 void semanticAnalyzer()
 {
-	
+
 }
 
 void symbolTable()
 {
-
-	//Check if IDENTIFIER
-	/*
-
-	//ITERATE THROUGH FILE
-		if(token == identifier)
-		{
-			//check if identifier is in table already if not 
-
-			//add to table
-			//ID    MEM Location   Type
-
-		//Set values in table
-		for (int i = 0; i++) {
-		
-			set Identifier
-			set memory address 
-			memoryAdd = memoryAdd+1
-
+	//cout << "List has " << list.size() << " elements" << endl;
+	cout << "\t\tSYMBOL TABLE\nIdentifier\tMemoryLocation\tType\n" ;
+	
+	for (int i = 0; i < idList.size(); i++) {
+		cout << idList.at(i) << "\t\t" << (5000 + i) << "\t\t" << typesList.at(i) << endl;
 		}
-
-		}
-
-	*/
-
+	cout << endl << endl;
 }
 
 
@@ -93,7 +77,7 @@ void syntaxError(string str)
 //-----------------------------------------------------------------------------------------
 
 string syntaxId() {
-	string str;
+	string str, filtered;
 	char operators[] = "+-*/%";
 	bool rightHandSide = true, firstOfLHS = true;
 
@@ -121,6 +105,27 @@ string syntaxId() {
 		myfile << "<Statement> -> <Assign>\n";
 		myfile << "<Assign> -> <Identifier> = <Expression>\n";
 	}
+
+
+	int i = 0;
+	bool found = false;
+	while (testWord[i] != NULL) { //filter out $
+		if (testWord[i] != '$')
+			filtered += testWord[i];
+		i++;
+	}
+
+	i = 0;
+	while (!found && i < idList.size()){
+		if (idList.at(i) == filtered)
+			found = true;
+		i++;
+	}
+	if(!found)
+		idList.push_back(filtered);
+
+
+
 	return str;
 }
 
@@ -231,7 +236,7 @@ string syntaxOp() {
 //-----------------------------------------------------------------------------------------
 
 
-void lexer(int &j) {
+void lexer(int& j) {
 	bool print = false, printline = false, test = false;
 	char operators[] = "+-*/%=", separators[] = "'(){}[],.:;!";
 	int i;
@@ -239,13 +244,6 @@ void lexer(int &j) {
 	//discard all spaces
 	while (testChar == ' ')
 		testChar = file.get();
-
-	/*if (conditionset) {
-		if (testChar != '(') {
-			syntaxError("Condition not set");
-		}
-		conditionset = false;
-	}*/
 
 	//check if comment
 	if (testChar == '!') {
@@ -423,6 +421,8 @@ int main() {
 
 	file.close();
 	myfile.close();
+
+	symbolTable();
 
 	return 0;
 }
