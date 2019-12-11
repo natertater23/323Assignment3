@@ -23,6 +23,7 @@ ofstream myfile;
 //INSTRUCTION ARRAY 
 //SYMBOL TABLE
 
+string prevType;
 vector<string> idList, typesList;
 char identifierArr[1000];
 
@@ -123,7 +124,7 @@ string syntaxId() {
 	}
 	if(!found)
 		idList.push_back(filtered);
-
+	typesList.push_back(prevType);
 
 
 	return str;
@@ -177,9 +178,15 @@ string syntaxKey() {
 	string str;
 
 	char wordsWithParenthese[7][10] = { "if", "while", "for", "forend","function", "main" };
+
 	for (int z = 0; z < 7; z++) {
 		if (strcmp(testWord, wordsWithParenthese[z]) == 0)
 			conditionset = true;
+	}
+
+	for (int z = 0; z < 3; z++) {
+		if (strcmp(testWord, keyWords[z]) == 0)
+			prevType = testWord;
 	}
 
 	for (int a = 0; a < 20; a++) {
