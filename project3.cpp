@@ -7,10 +7,9 @@
 #include <type_traits>
 #include <vector>
 #include <string>
-#include <stack>
 
 using namespace std;
-char testChar = ' ', stackx[20] = " ", testWord[20];
+char testChar = ' ', stack[20] = " ", testWord[20];
 char testCharList[20];
 char keyWords[20][10] = { "int", "float", "bool", "if", "else", "then", "endif", "while",
 		"whileend", "do", "doend", "for", "forend", "input", "output",
@@ -20,129 +19,37 @@ int flag = 0, lineNum = 1, stackindex = 0;
 ifstream file("SampleInputFile.txt");
 ofstream myfile;
 
-void error(string str)
-{
-	//Clear output file
-	myfile.close();
-	myfile.open("Syntax Analysis.txt", ios::out | ios::trunc);
-	// Output error message
-	myfile << "ERROR: " << str << " at line: " << lineNum;
-	exit(EXIT_FAILURE);
-}
-
-
-
 //---------------------------PROJECT 3-------------------------------------
 //INSTRUCTION ARRAY 
 //SYMBOL TABLE
 
-int Memory_Address = 5000;
-string prevType = "";
+string prevType;
 vector<string> idList, typesList;
-string lastID = "";
-string prevVar = "", nextVar = "";
+vector<int> memoryList;
+char identifierArr[1000];
 
-string instructions[1000];
-int instructionLine = 1;
-stack <int> s;
+//MEMORY ADDRESS VARIABLE
+//increment it by one when a new identifier is declared and placed into the table
+int memoryAdd = 5000;
 
-/*for instructions that require an input for
-integer value or memory location*/
-void assemble(string instruction, int value) {
-	if(instruction == "PUSHI"){
-		cout << instructionLine << "\tPUSHI\t" << value << endl;
-	}
-	else if (instruction == "PUSHM") {
-		cout << instructionLine << "\tPUSHM\t" << value << endl;
-	}
-	else if (instruction == "POPM") {
-		cout << instructionLine << "\tPOPM\t" << value << endl;
-	}
-	else if (instruction == "JUMPZ") {
-		cout << instructionLine << "\tJUMPZ\t" << value << endl;
-	}
-	else if (instruction == "JUMP") {
-		cout << instructionLine << "\tJUMP\t" << value << endl;
-	}
-	else {
-		error("Assembly Instruction not valid");
-	}
-	instructionLine++;
-}
-
-
-//for instructions that require no input
-void assemble(string instruction) {
-	if (instruction == "STDOUT") {
-		cout << instructionLine << "\tSTDOUT" << endl;
-	}
-	else if (instruction == "STDIN") {
-		cout << instructionLine << "\tSTDIN" << endl;
-	}
-	else if (instruction == "ADD") {
-		cout << instructionLine << "\tADD" << endl;
-	}
-	else if (instruction == "SUB") {
-		cout << instructionLine << "\tSUB" << endl;
-	}
-	else if (instruction == "MUL") {
-		cout << instructionLine << "\tMUL" << endl;
-	}
-	else if (instruction == "DIV") {
-		cout << instructionLine << "\tDIV" << endl;
-	}
-	else if (instruction == "GRT") {
-		cout << instructionLine << "\tGRT" << endl;
-	}
-	else if (instruction == "LES") {
-		cout << instructionLine << "\tLES" << endl;
-
-	}
-	else if (instruction == "EQU") {
-		cout << instructionLine << "\tEQU" << endl;
-
-	}
-	else if (instruction == "NEQ") {
-		cout << instructionLine << "\tNEQ" << endl;
-
-	}
-	else if (instruction == "GEQ") {
-		cout << instructionLine << "\tGEQ" << endl;
-
-	}
-	else if (instruction == "LEQ") {
-		cout << instructionLine << "\tLEQ" << endl;
-
-	}
-	else if (instruction == "LABEL") {
-		cout << instructionLine << "\tLABEL" << endl;
-	}
-	else {
-		error("Assembly Instruction not valid");
-	}
-	instructionLine++;
+void semanticAnalyzer()
+{
+	
 }
 
 void symbolTable()
 {
 	//cout << "List has " << list.size() << " elements" << endl;
-	cout << "\t\tSYMBOL TABLE\nIdentifier\tMemoryLocation\tType\n" ;
-	
+	cout << "\t\tSYMBOL TABLE\nIdentifier\tMemoryLocation\tType\n";
+
 	for (int i = 0; i < idList.size(); i++) {
-		cout << idList.at(i) << "\t\t" << (5000 + i) << "\t\t" << typesList.at(i) << endl;
-		}
+		cout << idList.at(i) << "\t\t" << memoryList.at(i) << "\t\t" << typesList.at(i) << endl;
+	}
 	cout << endl << endl;
 }
 
 
-
-
-
 //-------------------------------------------------------------------------------------
-
-
-
-
 
 
 
@@ -159,11 +66,17 @@ bool isKeyword(char input[]) {
 	return false;
 }
 
+void syntaxError(string str)
+{
+	//Clear output file
+	myfile.close();
+	myfile.open("Syntax Analysis.txt", ios::out | ios::trunc);
+	// Output error message
+	myfile << "ERROR: " << str << " at line: " << lineNum;
+	exit(EXIT_FAILURE);
+}
 
-
-
-
-
+//-----------------------------------------------------------------------------------------
 
 string syntaxId() {
 	string str, filtered;
@@ -195,7 +108,7 @@ string syntaxId() {
 		myfile << "<Assign> -> <Identifier> = <Expression>\n";
 	}
 
-	//KEEP THIS CODE
+
 	int i = 0;
 	bool found = false;
 	while (testWord[i] != NULL) { //filter out $
@@ -204,44 +117,32 @@ string syntaxId() {
 		i++;
 	}
 
-	//find if testWord already exists in idList
 	i = 0;
-	while (!found && i < idList.size()){
+	while (!found && i < idList.size()) {
 		if (idList.at(i) == filtered)
 			found = true;
 		i++;
 	}
-	if (!found) {//if it doesn't exist in the list, add it
-		if (prevType == "")
-			error("No declaration given");
+	if (!found)
+	{
 		idList.push_back(filtered);
-		Memory_Address++;
+		memoryList.push_back(5000 + i);
 	}
-
 	typesList.push_back(prevType);
 
-
-	if (prevVar == "")
-		prevVar = testWord;
-	else if (nextVar == "")
-		nextVar = testWord;
 
 	return str;
 }
 
-
-
-
-
 string syntaxSep() {
-	//KEEP THIS CODE
 	string str = " <Separator> -> ";
 
 	char openers[5] = { "([{'" }, closers[] = { ")]}'" };
+	//openers[5] += '"';
 	for (int a = 0; a < 4; a++) {
-		if (testChar == openers[a] && stackx[stackindex] != openers[a]) {//know testChar is a closing separator
+		if (testChar == openers[a] && stack[stackindex] != openers[a]) {//know testChar is a closing separator
 			stackindex++;
-			stackx[stackindex] = testChar;//add separator to the stack
+			stack[stackindex] = testChar;//add separator to the stack
 
 			if (testChar == '(') {
 				str += " <Condition>\n";
@@ -254,9 +155,9 @@ string syntaxSep() {
 			return str;
 		}
 		else if (testChar == closers[a]) {//know testChar is a closing separator
-			if (openers[a] == stackx[stackindex]) {
+			if (openers[a] == stack[stackindex]) {
 				//continue
-				stackx[stackindex] = ' ';
+				stack[stackindex] = ' ';
 				stackindex--;
 				if (testChar == ')') {
 					str += " <Condition>\n";
@@ -270,19 +171,14 @@ string syntaxSep() {
 				return str;
 			}
 			else
-				error("Closing separator incompatible");
+				syntaxError("Closing separator incompatible");
 		}
 	}
 	str += " <EndSeparator>\n";
 	return str;
 }
 
-
-
-
-
 string syntaxKey() {
-	//KEEP THIS CODE
 	string str;
 
 	char wordsWithParenthese[7][10] = { "if", "while", "for", "forend","function", "main" };
@@ -318,69 +214,35 @@ string syntaxKey() {
 	return str;
 }
 
-
-
-
-
 string syntaxNum() {
 	string str;
-	
+	str = " <Number> -> <Assign>";
+	str = " <Assign> -> <" + (string)testWord + ">";
 	return str;
 }
-
-
-
-
 
 string syntaxOp() {
-
-	//KEEP THIS CODE
 	string str;
-	for (int i = 0; i < idList.size(); i++) {
-		if (idList.at(i) == prevVar)
-			assemble("PUSHM", (5000 + i));
-		else if (idList.at(i) == nextVar)
-			assemble("PUSHM", (5000 + i));
-		cout << "WITH " << prevVar << " + " << nextVar << endl;
-	}
 	if (testChar == '*') {
-		
-		assemble("MULT");
+		myfile << " <TermPrime> -> * <Factor> <TermPrime>\n";
+		myfile << " <ExpressionPrime> -> <Empty>\n";
 	}
 	else if (testChar == '/') {
-		assemble("DIV");
+		myfile << " <TermPrime> -> / <Factor> <TermPrime>\n";
+		myfile << " <ExpressionPrime> -> <Empty>\n";
 	}
 	if (testChar == '+') {
-		assemble("ADD");
+		myfile << " <TermPrime> -> <Empty>\n";
+		myfile << " <ExpressionPrime> -> + <Term> <ExpressionPrime>\n";
 	}
 	else if (testChar == '-') {
-		assemble("SUB");
+		myfile << " <TermPrime> -> <Empty>\n";
+		myfile << " <ExpressionPrime> -> - <Term> <ExpressionPrime>\n";
 	}
-	
+	myfile << " <Empty>->Epsilon\n";
 
 	return str;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //-----------------------------------------------------------------------------------------
 
@@ -558,7 +420,6 @@ int main() {
 		i++;
 		if (testChar == '\n')
 		{
-			prevType = "";
 			lineNum++;
 			for (int i = 0; i < 20; i++)
 				testCharList[i] = '\0';
@@ -567,7 +428,7 @@ int main() {
 		lexer(j);
 	}
 	if (stackindex != 0)
-		error("Closing argument not found");
+		syntaxError("Closing argument not found");
 
 	file.close();
 	myfile.close();
