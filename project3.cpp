@@ -23,18 +23,96 @@ ofstream myfile;
 //INSTRUCTION ARRAY 
 //SYMBOL TABLE
 
-string prevType;
-vector<string> idList, typesList;
 vector<int> memoryList;
 char identifierArr[1000];
 
 //MEMORY ADDRESS VARIABLE
 //increment it by one when a new identifier is declared and placed into the table
-int memoryAdd = 5000;
+int Memory_Address = 5000;
+string prevType = "";
+vector<string> idList, typesList;
+string lastID = "";
+string prevVar = "", nextVar = "";
 
-void semanticAnalyzer()
-{
-	
+string instructions[1000];
+int instructionLine = 1;
+stack <int> s;
+
+/*for instructions that require an input for
+integer value or memory location*/
+void assemble(string instruction, int value) {
+	if(instruction == "PUSHI"){
+		cout << instructionLine << "\tPUSHI\t" << value << endl;
+	}
+	else if (instruction == "PUSHM") {
+		cout << instructionLine << "\tPUSHM\t" << value << endl;
+	}
+	else if (instruction == "POPM") {
+		cout << instructionLine << "\tPOPM\t" << value << endl;
+	}
+	else if (instruction == "JUMPZ") {
+		cout << instructionLine << "\tJUMPZ\t" << value << endl;
+	}
+	else if (instruction == "JUMP") {
+		cout << instructionLine << "\tJUMP\t" << value << endl;
+	}
+	else {
+		error("Assembly Instruction not valid");
+	}
+	instructionLine++;
+}
+
+
+//for instructions that require no input
+void assemble(string instruction) {
+	if (instruction == "STDOUT") {
+		cout << instructionLine << "\tSTDOUT" << endl;
+	}
+	else if (instruction == "STDIN") {
+		cout << instructionLine << "\tSTDIN" << endl;
+	}
+	else if (instruction == "ADD") {
+		cout << instructionLine << "\tADD" << endl;
+	}
+	else if (instruction == "SUB") {
+		cout << instructionLine << "\tSUB" << endl;
+	}
+	else if (instruction == "MUL") {
+		cout << instructionLine << "\tMUL" << endl;
+	}
+	else if (instruction == "DIV") {
+		cout << instructionLine << "\tDIV" << endl;
+	}
+	else if (instruction == "GRT") {
+		cout << instructionLine << "\tGRT" << endl;
+	}
+	else if (instruction == "LES") {
+		cout << instructionLine << "\tLES" << endl;
+
+	}
+	else if (instruction == "EQU") {
+		cout << instructionLine << "\tEQU" << endl;
+
+	}
+	else if (instruction == "NEQ") {
+		cout << instructionLine << "\tNEQ" << endl;
+
+	}
+	else if (instruction == "GEQ") {
+		cout << instructionLine << "\tGEQ" << endl;
+
+	}
+	else if (instruction == "LEQ") {
+		cout << instructionLine << "\tLEQ" << endl;
+
+	}
+	else if (instruction == "LABEL") {
+		cout << instructionLine << "\tLABEL" << endl;
+	}
+	else {
+		error("Assembly Instruction not valid");
+	}
+	instructionLine++;
 }
 
 void symbolTable()
