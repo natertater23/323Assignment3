@@ -20,6 +20,18 @@ int flag = 0, lineNum = 1, stackindex = 0;
 ifstream file("SampleInputFile.txt");
 ofstream myfile;
 
+void error(string str)
+{
+	//Clear output file
+	myfile.close();
+	myfile.open("Syntax Analysis.txt", ios::out | ios::trunc);
+	// Output error message
+	myfile << "ERROR: " << str << " at line: " << lineNum;
+	exit(EXIT_FAILURE);
+}
+
+
+
 //---------------------------PROJECT 3-------------------------------------
 //INSTRUCTION ARRAY 
 //SYMBOL TABLE
@@ -27,6 +39,8 @@ ofstream myfile;
 int Memory_Address = 5000;
 string prevType = "";
 vector<string> idList, typesList;
+string lastID = "";
+string prevVar = "", nextVar = "";
 
 string instructions[1000];
 int instructionLine = 1;
@@ -121,7 +135,14 @@ void symbolTable()
 }
 
 
+
+
+
 //-------------------------------------------------------------------------------------
+
+
+
+
 
 
 
@@ -138,17 +159,11 @@ bool isKeyword(char input[]) {
 	return false;
 }
 
-void error(string str)
-{
-	//Clear output file
-	myfile.close();
-	myfile.open("Syntax Analysis.txt", ios::out | ios::trunc);
-	// Output error message
-	myfile << "ERROR: " << str << " at line: " << lineNum;
-	exit(EXIT_FAILURE);
-}
 
-//-----------------------------------------------------------------------------------------
+
+
+
+
 
 string syntaxId() {
 	string str, filtered;
@@ -180,7 +195,7 @@ string syntaxId() {
 		myfile << "<Assign> -> <Identifier> = <Expression>\n";
 	}
 
-
+	//KEEP THIS CODE
 	int i = 0;
 	bool found = false;
 	while (testWord[i] != NULL) { //filter out $
@@ -189,13 +204,14 @@ string syntaxId() {
 		i++;
 	}
 
+	//find if testWord already exists in idList
 	i = 0;
 	while (!found && i < idList.size()){
 		if (idList.at(i) == filtered)
 			found = true;
 		i++;
 	}
-	if (!found) {
+	if (!found) {//if it doesn't exist in the list, add it
 		if (prevType == "")
 			error("No declaration given");
 		idList.push_back(filtered);
@@ -205,10 +221,20 @@ string syntaxId() {
 	typesList.push_back(prevType);
 
 
+	if (prevVar == "")
+		prevVar = testWord;
+	else if (nextVar == "")
+		nextVar = testWord;
+
 	return str;
 }
 
+
+
+
+
 string syntaxSep() {
+	//KEEP THIS CODE
 	string str = " <Separator> -> ";
 
 	char openers[5] = { "([{'" }, closers[] = { ")]}'" };
@@ -251,7 +277,12 @@ string syntaxSep() {
 	return str;
 }
 
+
+
+
+
 string syntaxKey() {
+	//KEEP THIS CODE
 	string str;
 
 	char wordsWithParenthese[7][10] = { "if", "while", "for", "forend","function", "main" };
@@ -287,35 +318,69 @@ string syntaxKey() {
 	return str;
 }
 
+
+
+
+
 string syntaxNum() {
 	string str;
-	str = " <Number> -> <Assign>";
-	str = " <Assign> -> <" + (string)testWord + ">";
+	
 	return str;
 }
+
+
+
+
 
 string syntaxOp() {
+
+	//KEEP THIS CODE
 	string str;
+	for (int i = 0; i < idList.size(); i++) {
+		if (idList.at(i) == prevVar)
+			assemble("PUSHM", (5000 + i));
+		else if (idList.at(i) == nextVar)
+			assemble("PUSHM", (5000 + i));
+		cout << "WITH " << prevVar << " + " << nextVar << endl;
+	}
 	if (testChar == '*') {
-		myfile << " <TermPrime> -> * <Factor> <TermPrime>\n";
-		myfile << " <ExpressionPrime> -> <Empty>\n";
+		
+		assemble("MULT");
 	}
 	else if (testChar == '/') {
-		myfile << " <TermPrime> -> / <Factor> <TermPrime>\n";
-		myfile << " <ExpressionPrime> -> <Empty>\n";
+		assemble("DIV");
 	}
 	if (testChar == '+') {
-		myfile << " <TermPrime> -> <Empty>\n";
-		myfile << " <ExpressionPrime> -> + <Term> <ExpressionPrime>\n";
+		assemble("ADD");
 	}
 	else if (testChar == '-') {
-		myfile << " <TermPrime> -> <Empty>\n";
-		myfile << " <ExpressionPrime> -> - <Term> <ExpressionPrime>\n";
+		assemble("SUB");
 	}
-	myfile << " <Empty>->Epsilon\n";
+	
 
 	return str;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //-----------------------------------------------------------------------------------------
 
