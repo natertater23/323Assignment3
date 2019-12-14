@@ -1,5 +1,5 @@
 
-//include "pch.h"
+#include "pch.h"
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -25,7 +25,7 @@ void error(string str)
 {
 	//Clear output file
 	myfile.close();
-	myfile.open("Syntax Analysis.txt", ios::out | ios::trunc);
+	myfile.open("FinalOutput.txt", ios::out | ios::trunc);
 	// Output error message
 	myfile << "ERROR: " << str << " at line: " << lineNum;
 	exit(EXIT_FAILURE);
@@ -540,8 +540,8 @@ void lexer(int& j) {
 
 int main() {
 
-	myfile.open("Syntax Analysis.txt");    //makes file named Syntax Analysis
-	myfile << "            SYNTAX ANALYSIS" << endl;
+	myfile.open("FinalOutput.txt");    //makes file named Syntax Analysis
+	myfile << "           Final Output" << endl;
 	myfile << "----------------------------------------------------" << endl;
 
 	if (!file.is_open()) {
