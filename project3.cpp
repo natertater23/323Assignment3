@@ -7,9 +7,10 @@
 #include <type_traits>
 #include <vector>
 #include <string>
+#include <stack>
 
 using namespace std;
-char testChar = ' ', stack[20] = " ", testWord[20];
+char testChar = ' ', stackx[20] = " ", testWord[20];
 char testCharList[20];
 char keyWords[20][10] = { "int", "float", "bool", "if", "else", "then", "endif", "while",
 		"whileend", "do", "doend", "for", "forend", "input", "output",
@@ -19,15 +20,22 @@ int flag = 0, lineNum = 1, stackindex = 0;
 ifstream file("SampleInputFile.txt");
 ofstream myfile;
 
+void error(string str)
+{
+	//Clear output file
+	myfile.close();
+	myfile.open("Syntax Analysis.txt", ios::out | ios::trunc);
+	// Output error message
+	myfile << "ERROR: " << str << " at line: " << lineNum;
+	exit(EXIT_FAILURE);
+}
+
+
+
 //---------------------------PROJECT 3-------------------------------------
 //INSTRUCTION ARRAY 
 //SYMBOL TABLE
 
-vector<int> memoryList;
-char identifierArr[1000];
-
-//MEMORY ADDRESS VARIABLE
-//increment it by one when a new identifier is declared and placed into the table
 int Memory_Address = 5000;
 string prevType = "";
 vector<string> idList, typesList;
@@ -118,16 +126,23 @@ void assemble(string instruction) {
 void symbolTable()
 {
 	//cout << "List has " << list.size() << " elements" << endl;
-	cout << "\t\tSYMBOL TABLE\nIdentifier\tMemoryLocation\tType\n";
-
+	cout << "\t\tSYMBOL TABLE\nIdentifier\tMemoryLocation\tType\n" ;
+	
 	for (int i = 0; i < idList.size(); i++) {
-		cout << idList.at(i) << "\t\t" << memoryList.at(i) << "\t\t" << typesList.at(i) << endl;
-	}
+		cout << idList.at(i) << "\t\t" << (5000 + i) << "\t\t" << typesList.at(i) << endl;
+		}
 	cout << endl << endl;
 }
 
 
+
+
+
 //-------------------------------------------------------------------------------------
+
+
+
+
 
 
 
@@ -144,17 +159,11 @@ bool isKeyword(char input[]) {
 	return false;
 }
 
-void syntaxError(string str)
-{
-	//Clear output file
-	myfile.close();
-	myfile.open("Syntax Analysis.txt", ios::out | ios::trunc);
-	// Output error message
-	myfile << "ERROR: " << str << " at line: " << lineNum;
-	exit(EXIT_FAILURE);
-}
 
-//-----------------------------------------------------------------------------------------
+
+
+
+
 
 string syntaxId() {
 	string str, filtered;
@@ -186,7 +195,7 @@ string syntaxId() {
 		myfile << "<Assign> -> <Identifier> = <Expression>\n";
 	}
 
-
+	//KEEP THIS CODE
 	int i = 0;
 	bool found = false;
 	while (testWord[i] != NULL) { //filter out $
@@ -195,32 +204,55 @@ string syntaxId() {
 		i++;
 	}
 
+	//find if testWord already exists in idList
 	i = 0;
-	while (!found && i < idList.size()) {
+	while (!found && i < idList.size()){
 		if (idList.at(i) == filtered)
 			found = true;
 		i++;
 	}
-	if (!found)
-	{
+	if (!found) {//if it doesn't exist in the list, add it
+		if (prevType == "")
+			error("No declaration given");
 		idList.push_back(filtered);
-		memoryList.push_back(5000 + i);
+		Memory_Address++;
 	}
+
 	typesList.push_back(prevType);
 
+
+	if (prevVar == "") {
+		cout << "prevVar changes from " << prevVar << " to ";
+		prevVar = testWord;
+
+		cout << prevVar;
+		cout << "because testword is " << testWord << endl;
+	}
+	else if (nextVar == "") {
+		cout << "nextVar changes from " << nextVar << " to ";
+		nextVar = testWord;
+
+		cout <<  nextVar;
+		cout << "because testword is " << testWord << endl;
+
+	}
 
 	return str;
 }
 
+
+
+
+
 string syntaxSep() {
+	//KEEP THIS CODE
 	string str = " <Separator> -> ";
 
 	char openers[5] = { "([{'" }, closers[] = { ")]}'" };
-	//openers[5] += '"';
 	for (int a = 0; a < 4; a++) {
-		if (testChar == openers[a] && stack[stackindex] != openers[a]) {//know testChar is a closing separator
+		if (testChar == openers[a] && stackx[stackindex] != openers[a]) {//know testChar is a closing separator
 			stackindex++;
-			stack[stackindex] = testChar;//add separator to the stack
+			stackx[stackindex] = testChar;//add separator to the stack
 
 			if (testChar == '(') {
 				str += " <Condition>\n";
@@ -233,9 +265,9 @@ string syntaxSep() {
 			return str;
 		}
 		else if (testChar == closers[a]) {//know testChar is a closing separator
-			if (openers[a] == stack[stackindex]) {
+			if (openers[a] == stackx[stackindex]) {
 				//continue
-				stack[stackindex] = ' ';
+				stackx[stackindex] = ' ';
 				stackindex--;
 				if (testChar == ')') {
 					str += " <Condition>\n";
@@ -249,14 +281,19 @@ string syntaxSep() {
 				return str;
 			}
 			else
-				syntaxError("Closing separator incompatible");
+				error("Closing separator incompatible");
 		}
 	}
 	str += " <EndSeparator>\n";
 	return str;
 }
 
+
+
+
+
 string syntaxKey() {
+	//KEEP THIS CODE
 	string str;
 
 	char wordsWithParenthese[7][10] = { "if", "while", "for", "forend","function", "main" };
@@ -292,35 +329,72 @@ string syntaxKey() {
 	return str;
 }
 
+
+
+
+
 string syntaxNum() {
 	string str;
-	str = " <Number> -> <Assign>";
-	str = " <Assign> -> <" + (string)testWord + ">";
+	
 	return str;
 }
+
+
+
+
 
 string syntaxOp() {
+
+	//KEEP THIS CODE
 	string str;
+	for (int i = 0; i < idList.size(); i++) {
+		if (idList.at(i) == prevVar) {
+			cout << "prevVar: " << prevVar << " @ " << lineNum << "\n";
+			cout << "Operator: " << testChar << endl;
+			assemble("PUSHM", (5000 + i));
+		}
+		else if (idList.at(i) == nextVar)
+			assemble("PUSHM", (5000 + i));
+		cout << "WITH " << prevVar << " + " << nextVar << endl;
+	}
 	if (testChar == '*') {
-		myfile << " <TermPrime> -> * <Factor> <TermPrime>\n";
-		myfile << " <ExpressionPrime> -> <Empty>\n";
+		
+		assemble("MULT");
 	}
 	else if (testChar == '/') {
-		myfile << " <TermPrime> -> / <Factor> <TermPrime>\n";
-		myfile << " <ExpressionPrime> -> <Empty>\n";
+		assemble("DIV");
 	}
 	if (testChar == '+') {
-		myfile << " <TermPrime> -> <Empty>\n";
-		myfile << " <ExpressionPrime> -> + <Term> <ExpressionPrime>\n";
+		assemble("ADD");
 	}
 	else if (testChar == '-') {
-		myfile << " <TermPrime> -> <Empty>\n";
-		myfile << " <ExpressionPrime> -> - <Term> <ExpressionPrime>\n";
+		assemble("SUB");
 	}
-	myfile << " <Empty>->Epsilon\n";
+	
 
 	return str;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //-----------------------------------------------------------------------------------------
 
@@ -498,6 +572,7 @@ int main() {
 		i++;
 		if (testChar == '\n')
 		{
+			prevType = "";
 			lineNum++;
 			for (int i = 0; i < 20; i++)
 				testCharList[i] = '\0';
@@ -506,7 +581,7 @@ int main() {
 		lexer(j);
 	}
 	if (stackindex != 0)
-		syntaxError("Closing argument not found");
+		error("Closing argument not found");
 
 	file.close();
 	myfile.close();
