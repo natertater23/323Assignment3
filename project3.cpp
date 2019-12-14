@@ -41,6 +41,7 @@ string prevType = "";
 vector<string> idList, typesList;
 string lastID = "";
 string prevVar = "", nextVar = "";
+char lastOp;
 
 string instructions[1000];
 int instructionLine = 1;
@@ -207,8 +208,10 @@ string syntaxId() {
 	//find if testWord already exists in idList
 	i = 0;
 	while (!found && i < idList.size()){
-		if (idList.at(i) == filtered)
+		if (idList.at(i) == filtered) {
 			found = true;
+			//cout << "found at index " << i << endl;
+		}
 		i++;
 	}
 	if (!found) {//if it doesn't exist in the list, add it
@@ -220,22 +223,28 @@ string syntaxId() {
 
 	typesList.push_back(prevType);
 
-
 	if (prevVar == "") {
-		cout << "prevVar changes from " << prevVar << " to ";
+		//cout << "prevVar changes from " << prevVar << " to ";
 		prevVar = testWord;
 
-		cout << prevVar;
-		cout << "because testword is " << testWord << endl;
+		//cout << prevVar;
+		//cout << " because testword is " << testWord << endl;
 	}
 	else if (nextVar == "") {
-		cout << "nextVar changes from " << nextVar << " to ";
+		//cout << "nextVar changes from " << nextVar << " to ";
 		nextVar = testWord;
 
-		cout <<  nextVar;
-		cout << "because testword is " << testWord << endl;
+		//cout <<  nextVar;
+		//cout << " because testword is " << testWord << endl;
 
 	}
+
+	/*if (isblank(lastOp)) {
+		for (int i = 0; i < idList.size(); i++) {
+			if (idList.at(i) == nextVar)
+				assemble("ADD", i);
+		}
+	}*/
 
 	return str;
 }
@@ -347,15 +356,26 @@ string syntaxOp() {
 
 	//KEEP THIS CODE
 	string str;
+
+	lastOp = testChar;
+
+	bool foundFirst = false;
+	bool foundSecond = false;
 	for (int i = 0; i < idList.size(); i++) {
-		if (idList.at(i) == prevVar) {
-			cout << "prevVar: " << prevVar << " @ " << lineNum << "\n";
-			cout << "Operator: " << testChar << endl;
+		if (!foundFirst && idList.at(i) == prevVar) {
+			//cout << "prevVar: " << prevVar << " @ " << lineNum << "\n";
+			//cout << "Operator: " << testChar << endl;
 			assemble("PUSHM", (5000 + i));
+			foundFirst = true;
+			//cout << " at iteration " << i << " at line " << lineNum << endl;
+
 		}
-		else if (idList.at(i) == nextVar)
+		else if (!foundSecond && idList.at(i) == nextVar) {
 			assemble("PUSHM", (5000 + i));
-		cout << "WITH " << prevVar << " + " << nextVar << endl;
+			//cout << "WITH " << prevVar << " + " << nextVar << endl;
+			foundSecond - true;
+			//cout << " at iteration " << i  << " at line " << lineNum << endl;
+		}
 	}
 	if (testChar == '*') {
 		
@@ -573,6 +593,8 @@ int main() {
 		if (testChar == '\n')
 		{
 			prevType = "";
+			prevVar = "";
+			nextVar = "";
 			lineNum++;
 			for (int i = 0; i < 20; i++)
 				testCharList[i] = '\0';
