@@ -1,5 +1,5 @@
 
-#include "pch.h"
+//#include "pch.h"
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -213,8 +213,10 @@ string syntaxId() {
 		i++;
 	}
 	if (!found) {//if it doesn't exist in the list, add it
-		if (prevType == "")
+		if (prevType == "") {
+			symbolTable();
 			error("No declaration given");
+		}
 		idList.push_back(filtered);
 		Memory_Address++;
 	}
