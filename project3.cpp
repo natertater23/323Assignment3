@@ -39,6 +39,7 @@ void error(string str)
 int Memory_Address = 5000;
 string prevType = "";
 vector<string> idList, typesList;
+vector<int> memoryList;
 string lastID = "";
 string prevVar = "", nextVar = "";
 char lastOp;
@@ -130,7 +131,7 @@ void symbolTable()
 	cout << "\n\n\t\tSYMBOL TABLE\nIdentifier\tMemoryLocation\tType\n" ;
 	
 	for (int i = 0; i < idList.size(); i++) {
-		cout << idList.at(i) << "\t\t" << (5000 + i) << "\t\t" << typesList.at(i) << endl;
+		cout << idList.at(i) << "\t\t" << memoryList.at(i) << "\t\t" << typesList.at(i) << endl;
 		}
 	cout << endl << endl;
 }
@@ -218,6 +219,7 @@ string syntaxId() {
 		if (prevType == "")
 			error("No declaration given");
 		idList.push_back(filtered);
+		memoryList.push_back(Memory_Address);
 		Memory_Address++;
 		typesList.push_back(prevType);
 	}
