@@ -10,11 +10,11 @@
 #include <stack>
 
 using namespace std;
-char testChar = ' ', stackx[20] = " ", testWord[20];
-char testCharList[20];
-char keyWords[20][10] = { "int", "float", "bool", "if", "else", "then", "endif", "while",
+char testChar = ' ', stackx[23] = " ", testWord[23];
+char testCharList[23];
+char keyWords[23][10] = { "int", "float", "bool", "boolean", "if", "else", "then", "endif", "while",
 		"whileend", "do", "doend", "for", "forend", "input", "output",
-		"and", "or", "function", "void", "main" };
+		"and", "or", "function", "void", "main", "true", "false" };
 bool conditionset;
 int flag = 0, lineNum = 1, stackindex = 0;
 ifstream file("SampleInputFile.txt");
@@ -46,6 +46,7 @@ char lastOp;
 string instructions[1000];
 int instructionLine = 1;
 stack <int> s;
+string delay = "";
 
 /*for instructions that require an input for
 integer value or memory location*/
@@ -126,8 +127,7 @@ void assemble(string instruction) {
 
 void symbolTable()
 {
-	//cout << "List has " << list.size() << " elements" << endl;
-	cout << "\t\tSYMBOL TABLE\nIdentifier\tMemoryLocation\tType\n" ;
+	cout << "\n\n\t\tSYMBOL TABLE\nIdentifier\tMemoryLocation\tType\n" ;
 	
 	for (int i = 0; i < idList.size(); i++) {
 		cout << idList.at(i) << "\t\t" << (5000 + i) << "\t\t" << typesList.at(i) << endl;
@@ -219,9 +219,9 @@ string syntaxId() {
 			error("No declaration given");
 		idList.push_back(filtered);
 		Memory_Address++;
+		typesList.push_back(prevType);
 	}
-
-	typesList.push_back(prevType);
+	
 
 	if (prevVar == "") {
 		//cout << "prevVar changes from " << prevVar << " to ";
@@ -245,6 +245,7 @@ string syntaxId() {
 				assemble("ADD", i);
 		}
 	}*/
+
 
 	return str;
 }
@@ -305,15 +306,16 @@ string syntaxKey() {
 	//KEEP THIS CODE
 	string str;
 
-	char wordsWithParenthese[7][10] = { "if", "while", "for", "forend","function", "main" };
+	char wordsWithParenthese[6][10] = { "if", "while", "for", "forend","function", "main" };
 
 	for (int z = 0; z < 7; z++) {
 		if (strcmp(testWord, wordsWithParenthese[z]) == 0)
 			conditionset = true;
 	}
 
-	for (int z = 0; z < 3; z++) {
-		if (strcmp(testWord, keyWords[z]) == 0)
+	char importantKeys[6][10] = { "int", "bool", "float", "double", "char", "boolean" };
+	for (int z = 0; z < 6; z++) {
+		if (strcmp(testWord, importantKeys[z]) == 0)
 			prevType = testWord;
 	}
 
@@ -334,7 +336,10 @@ string syntaxKey() {
 				str += " <Function> -> <" + key + ">";
 			}
 		}
+
+		
 	}
+
 	return str;
 }
 
@@ -342,10 +347,21 @@ string syntaxKey() {
 
 
 
-string syntaxNum() {
-	string str;
-	
-	return str;
+string syntaxNum(char str[]) {
+	//cout << "current number is " << atoi(str) << " (" << str << ")" << endl;
+	if (delay != "") {//if delay is active
+		assemble("PUSHI", atoi(str));
+
+		for (int i = 0; i < idList.size(); i++) {//find memory address
+			if (idList.at(i) == prevVar) {
+				assemble(delay, (5000 + i));
+				cout << "assembled at " << lineNum << "\n\n";
+
+			}
+		}
+	}
+	delay = "";
+	return "";
 }
 
 
@@ -354,41 +370,52 @@ string syntaxNum() {
 
 string syntaxOp() {
 
-	//KEEP THIS CODE
 	string str;
 
 	lastOp = testChar;
 
 	bool foundFirst = false;
 	bool foundSecond = false;
-	for (int i = 0; i < idList.size(); i++) {
-		if (!foundFirst && idList.at(i) == prevVar) {
-			//cout << "prevVar: " << prevVar << " @ " << lineNum << "\n";
-			//cout << "Operator: " << testChar << endl;
-			assemble("PUSHM", (5000 + i));
-			foundFirst = true;
-			//cout << " at iteration " << i << " at line " << lineNum << endl;
 
+	
+
+	//only if operator is an = sign then delay must occur
+	if (testChar == '=') {
+
+		delay = "POPM";
+	}
+	else {//all other operators
+
+		for (int i = 0; i < idList.size(); i++) {
+			if (!foundFirst && idList.at(i) == prevVar) {
+				//cout << "prevVar: " << prevVar << " @ " << lineNum << "\n";
+				//cout << "Operator: " << testChar << endl;
+				assemble("PUSHM", (5000 + i));
+				foundFirst = true;
+				//cout << " at iteration " << i << " at line " << lineNum << endl;
+			}
 		}
-		else if (!foundSecond && idList.at(i) == nextVar) {
+
+		/*if (!foundSecond && idList.at(i) == nextVar) {
 			assemble("PUSHM", (5000 + i));
 			//cout << "WITH " << prevVar << " + " << nextVar << endl;
 			foundSecond - true;
 			//cout << " at iteration " << i  << " at line " << lineNum << endl;
+			*/
+
+		if (testChar == '*') {
+
+			assemble("MULT");
 		}
-	}
-	if (testChar == '*') {
-		
-		assemble("MULT");
-	}
-	else if (testChar == '/') {
-		assemble("DIV");
-	}
-	if (testChar == '+') {
-		assemble("ADD");
-	}
-	else if (testChar == '-') {
-		assemble("SUB");
+		else if (testChar == '/') {
+			assemble("DIV");
+		}
+		if (testChar == '+') {
+			assemble("ADD");
+		}
+		else if (testChar == '-') {
+			assemble("SUB");
+		}
 	}
 	
 
@@ -474,12 +501,11 @@ void lexer(int& j) {
 	//Check if number
 	if (isdigit(testChar))
 	{
-		//cout << testChar << " is a number\n";
 		char str[5];
 		int x = 0;
 		testWord[j] = '\0';
 		j = 0;
-		str[x] = testChar;
+		str[x++] = testChar;
 
 		while (isdigit(file.peek())) {
 			testChar = file.get();
@@ -487,7 +513,6 @@ void lexer(int& j) {
 			x++;
 		}
 
-		myfile << "\n\nToken:\tNUMBER" << "\t\t\tLexme:\t";
 		if (x == 0)
 			myfile << str[0];
 		else {
@@ -500,7 +525,7 @@ void lexer(int& j) {
 			myfile << " at line " << lineNum;
 		myfile << endl;
 		flag = 0;
-		myfile << syntaxNum();
+		myfile << syntaxNum(str);
 		return;
 	}
 
@@ -514,6 +539,7 @@ void lexer(int& j) {
 			stop = true;
 		while (!stop) {
 			testWord[j++] = testChar;
+			//cout << isprint(next) << " ";
 			next = file.peek();
 			for (i = 0; i < 11; ++i)
 			{
