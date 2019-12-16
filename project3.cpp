@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <stack>
+#include <sstream> 
 
 using namespace std;
 char testChar = ' ', stackx[23] = " ", testWord[23];
@@ -48,91 +49,73 @@ string instructions[1000];
 int instructionLine = 1;
 stack <int> s;
 string delay = "";
+char equation[10][23];
+int iteration = 0;
+bool isEquation = false;
 
 /*for instructions that require an input for
 integer value or memory location*/
 void assemble(string instruction, int value) {
-	if(instruction == "PUSHI"){
-		cout << instructionLine << "\tPUSHI\t" << value << endl;
-	}
-	else if (instruction == "PUSHM") {
-		cout << instructionLine << "\tPUSHM\t" << value << endl;
-	}
-	else if (instruction == "POPM") {
-		cout << instructionLine << "\tPOPM\t" << value << endl;
-	}
-	else if (instruction == "JUMPZ") {
-		cout << instructionLine << "\tJUMPZ\t" << value << endl;
-	}
-	else if (instruction == "JUMP") {
-		cout << instructionLine << "\tJUMP\t" << value << endl;
-	}
-	else {
+	cout << instructionLine;
+	if (instruction == "PUSHI") 
+		cout << "\tPUSHI\t";
+	else if (instruction == "PUSHM") 
+		cout << "\tPUSHM\t";
+	else if (instruction == "POPM") 
+		cout << "\tPOPM\t";
+	else if (instruction == "JUMPZ") 
+		cout << "\tJUMPZ\t";
+	else if (instruction == "JUMP") 
+		cout << "\tJUMP\t";
+	else 
 		error("Assembly Instruction not valid");
-	}
 	instructionLine++;
+	cout << value << " @ line " << lineNum << endl;
 }
 
 
 //for instructions that require no input
 void assemble(string instruction) {
-	if (instruction == "STDOUT") {
-		cout << instructionLine << "\tSTDOUT" << endl;
-	}
-	else if (instruction == "STDIN") {
-		cout << instructionLine << "\tSTDIN" << endl;
-	}
-	else if (instruction == "ADD") {
-		cout << instructionLine << "\tADD" << endl;
-	}
-	else if (instruction == "SUB") {
-		cout << instructionLine << "\tSUB" << endl;
-	}
-	else if (instruction == "MUL") {
-		cout << instructionLine << "\tMUL" << endl;
-	}
-	else if (instruction == "DIV") {
-		cout << instructionLine << "\tDIV" << endl;
-	}
-	else if (instruction == "GRT") {
-		cout << instructionLine << "\tGRT" << endl;
-	}
-	else if (instruction == "LES") {
-		cout << instructionLine << "\tLES" << endl;
-
-	}
-	else if (instruction == "EQU") {
-		cout << instructionLine << "\tEQU" << endl;
-
-	}
-	else if (instruction == "NEQ") {
-		cout << instructionLine << "\tNEQ" << endl;
-
-	}
-	else if (instruction == "GEQ") {
-		cout << instructionLine << "\tGEQ" << endl;
-
-	}
-	else if (instruction == "LEQ") {
-		cout << instructionLine << "\tLEQ" << endl;
-
-	}
-	else if (instruction == "LABEL") {
-		cout << instructionLine << "\tLABEL" << endl;
-	}
-	else {
+	cout << instructionLine;
+	if (instruction == "STDOUT") 
+		cout << "\tSTDOUT";
+	else if (instruction == "STDIN") 
+		cout << "\tSTDIN";
+	else if (instruction == "ADD") 
+		cout << "\tADD";
+	else if (instruction == "SUB") 
+		cout << "\tSUB";
+	else if (instruction == "MUL") 
+		cout << "\tMUL";
+	else if (instruction == "DIV") 
+		cout << "\tDIV";
+	else if (instruction == "GRT") 
+		cout << "\tGRT";
+	else if (instruction == "LES") 
+		cout << "\tLES";
+	else if (instruction == "EQU") 
+		cout << "\tEQU";
+	else if (instruction == "NEQ") 
+		cout << "\tNEQ";
+	else if (instruction == "GEQ")
+		cout << "\tGEQ";
+	else if (instruction == "LEQ") 
+		cout << "\tLEQ";
+	else if (instruction == "LABEL") 
+		cout << "\tLABEL";
+	else 
 		error("Assembly Instruction not valid");
-	}
 	instructionLine++;
+	cout << " @ line " << lineNum << endl;
 }
 
 void symbolTable()
 {
-	cout << "\n\n\t\tSYMBOL TABLE\nIdentifier\tMemoryLocation\tType\n" ;
-	
+	cout << "\n\n\t\tSYMBOL TABLE\nIdentifier\tMemoryLocation\tType\n";
+
 	for (int i = 0; i < idList.size(); i++) {
 		cout << idList.at(i) << "\t\t" << memoryList.at(i) << "\t\t" << typesList.at(i) << endl;
-		}
+	}
 	cout << endl << endl;
 }
 
@@ -208,10 +191,9 @@ string syntaxId() {
 
 	//find if testWord already exists in idList
 	i = 0;
-	while (!found && i < idList.size()){
+	while (!found && i < idList.size()) {
 		if (idList.at(i) == filtered) {
 			found = true;
-			//cout << "found at index " << i << endl;
 		}
 		i++;
 	}
@@ -223,31 +205,22 @@ string syntaxId() {
 		Memory_Address++;
 		typesList.push_back(prevType);
 	}
-	
+
 
 	if (prevVar == "") {
-		//cout << "prevVar changes from " << prevVar << " to ";
 		prevVar = testWord;
-
-		//cout << prevVar;
-		//cout << " because testword is " << testWord << endl;
 	}
 	else if (nextVar == "") {
-		//cout << "nextVar changes from " << nextVar << " to ";
 		nextVar = testWord;
-
-		//cout <<  nextVar;
-		//cout << " because testword is " << testWord << endl;
-
 	}
 
-	/*if (isblank(lastOp)) {
-		for (int i = 0; i < idList.size(); i++) {
-			if (idList.at(i) == nextVar)
-				assemble("ADD", i);
-		}
-	}*/
-
+	//adds id to equation
+	i = 0;
+	while (!isblank(testWord[i]) && i < 23) {
+		equation[iteration][i] = testWord[i];
+		i++;
+	}
+	iteration++;
 
 	return str;
 }
@@ -339,7 +312,7 @@ string syntaxKey() {
 			}
 		}
 
-		
+
 	}
 
 	return str;
@@ -351,7 +324,7 @@ string syntaxKey() {
 
 string syntaxNum(char str[]) {
 	//cout << "current number is " << atoi(str) << " (" << str << ")" << endl;
-	if (delay != "") {//if delay is active
+	/*if (delay != "") {//if delay is active
 		assemble("PUSHI", atoi(str));
 
 		for (int i = 0; i < idList.size(); i++) {//find memory address
@@ -361,8 +334,13 @@ string syntaxNum(char str[]) {
 
 			}
 		}
-	}
+	}*/
+	//equation[iteration] = str;
 	delay = "";
+	for (int i = 0; i < 23; i++) {
+		equation[iteration][i] = testWord[i];
+	}
+	iteration++;
 	return "";
 }
 
@@ -379,12 +357,13 @@ string syntaxOp() {
 	bool foundFirst = false;
 	bool foundSecond = false;
 
-	
+
 
 	//only if operator is an = sign then delay must occur
 	if (testChar == '=') {
 
 		delay = "POPM";
+		isEquation = true;
 	}
 	else {//all other operators
 
@@ -405,21 +384,12 @@ string syntaxOp() {
 			//cout << " at iteration " << i  << " at line " << lineNum << endl;
 			*/
 
-		if (testChar == '*') {
-
-			assemble("MULT");
-		}
-		else if (testChar == '/') {
-			assemble("DIV");
-		}
-		if (testChar == '+') {
-			assemble("ADD");
-		}
-		else if (testChar == '-') {
-			assemble("SUB");
-		}
+		
 	}
-	
+
+
+	equation[iteration][0] = testChar;
+	iteration++;
 
 	return str;
 }
@@ -428,10 +398,57 @@ string syntaxOp() {
 
 
 
+int getAddr(string id) {
+	for (int i = 0; i < idList.size(); i++) {
+		if (id == idList.at(i))
+			return memoryList.at(i);
+	}
+}
 
+bool isNumber(const std::string& s)
+{
+	std::string::const_iterator it = s.begin();
+	while (it != s.end() && std::isdigit(*it)) ++it;
+	return !s.empty() && it == s.end();
+}
 
+void getInstruction(string str) {
+	
+	//cout << "Instruction: ___" << str << "___\n";
 
+	if (isNumber(str)) {
+		int val = 0;
+		stringstream num(str);
+		num >> val;
+		cout << str << " IS NUMBER " << val;
+	}
 
+	if (testChar == '*') {
+
+		assemble("MULT");
+	}
+	else if (testChar == '/') {
+		assemble("DIV");
+	}
+	else if (testChar == '+') {
+		assemble("ADD");
+	}
+	else if (testChar == '-') {
+		assemble("SUB");
+	}
+	else if (str == "=") {
+		//skip
+	}
+	else if (isNumber(str)) {
+		int val = 0;
+		stringstream num(str);
+		num >> val;
+		assemble("PUSHI", val);
+	}
+	else {//is an id
+		assemble("PUSHM", getAddr(str));
+	}
+}
 
 
 
@@ -541,7 +558,14 @@ void lexer(int& j) {
 			stop = true;
 		while (!stop) {
 			testWord[j++] = testChar;
-			//cout << isprint(next) << " ";
+			if (strcmp(testWord, "endif$") == 0)//competes program @ endif statement
+			{
+				file.close();
+				myfile.close();
+				symbolTable();
+				exit(EXIT_SUCCESS);
+				return;
+			}
 			next = file.peek();
 			for (i = 0; i < 11; ++i)
 			{
@@ -627,6 +651,33 @@ int main() {
 			for (int i = 0; i < 20; i++)
 				testCharList[i] = '\0';
 			i = 0;
+			
+			cout << "Result of Equation is: '";
+			for (int q = 0; q < 10; q++)
+			{
+				cout << equation[q] << "' '";
+			}
+			cout << endl;
+
+			if (isEquation) {
+				for (int x = iteration-1; x > 0; x--) {
+					getInstruction((string)equation[x]);
+				}
+				assemble("POPM", getAddr(equation[0]));
+			}
+			
+			//reset equation values
+			for (int z = 0; z < iteration; z++) {
+				memset(equation[iteration], 0, sizeof(equation[iteration]));
+			}
+			iteration = 0;
+			isEquation = false;
+			cout << "CLEARED: \niteration = " << iteration << "\nisEquation = " << isEquation << "\nEquation = " ;
+			for (int q = 0; q < 10; q++)
+			{
+				cout << equation[q] << "' '";
+			}
+			cout << endl;
 		}
 		lexer(j);
 	}
