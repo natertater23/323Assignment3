@@ -25,7 +25,7 @@ void error(string str)
 {
 	//Clear output file
 	myfile.close();
-	myfile.open("Syntax Analysis.txt", ios::out | ios::trunc);
+	myfile.open("FinalOutput.txt", ios::out | ios::trunc);
 	// Output error message
 	myfile << "ERROR: " << str << " at line: " << lineNum;
 	exit(EXIT_FAILURE);
@@ -150,35 +150,11 @@ bool isKeyword(char input[]) {
 
 
 
-string syntaxId() {
+string addId() {
 	string str, filtered;
 	char operators[] = "+-*/%";
-	bool rightHandSide = true, firstOfLHS = true;
+//	bool rightHandSide = true, firstOfLHS = true;
 
-	for (int i = 0; i < strlen(testCharList); i++)
-	{
-		if (testCharList[i] == '=')
-			rightHandSide = false;
-	}
-
-	if (!rightHandSide)
-	{
-		for (int i = 0; i < strlen(testCharList); i++)
-		{
-			for (int j = 0; j < 5; j++)
-				if (testCharList[i] == operators[j])
-					firstOfLHS = false;
-		}
-		if (firstOfLHS)
-			myfile << "<Expression> -> <Term> <Expression Prime>\n";
-		myfile << "<Term> -> <Factor><TermPrime>\n";
-		myfile << "<Factor> -> <Identifier>\n";
-	}
-	else
-	{
-		myfile << "<Statement> -> <Assign>\n";
-		myfile << "<Assign> -> <Identifier> = <Expression>\n";
-	}
 
 	//KEEP THIS CODE
 	int i = 0;
@@ -229,47 +205,12 @@ string syntaxId() {
 
 
 
-string syntaxSep() {
+string analyzeSep() {
 	//KEEP THIS CODE
-	string str = " <Separator> -> ";
+	string str = " ";
 
 	char openers[5] = { "([{'" }, closers[] = { ")]}'" };
-	for (int a = 0; a < 4; a++) {
-		if (testChar == openers[a] && stackx[stackindex] != openers[a]) {//know testChar is a closing separator
-			stackindex++;
-			stackx[stackindex] = testChar;//add separator to the stack
-
-			if (testChar == '(') {
-				str += " <Condition>\n";
-				str += " <Condition> -> ( <StatementList>";
-			}
-			else {
-				str += " <OpeningSeparator> <StatementList>\n";
-				str += " <OpeningSeparator> -> " + testChar;
-			}
-			return str;
-		}
-		else if (testChar == closers[a]) {//know testChar is a closing separator
-			if (openers[a] == stackx[stackindex]) {
-				//continue
-				stackx[stackindex] = ' ';
-				stackindex--;
-				if (testChar == ')') {
-					str += " <Condition>\n";
-					str += " <Condition> -> <StatementList> )";
-					str += "\n <StatementList> -> Epsilon";
-				}
-				else {
-					str += " <StatementList> <ClosingSeparator>\n";
-					str += " <ClosingSeparator> -> " + testChar;
-				}
-				return str;
-			}
-			else
-				error("Closing separator incompatible");
-		}
-	}
-	str += " <EndSeparator>\n";
+	
 	return str;
 }
 
@@ -277,7 +218,7 @@ string syntaxSep() {
 
 
 
-string syntaxKey() {
+string analyzeKey() {
 	//KEEP THIS CODE
 	string str;
 
@@ -348,7 +289,7 @@ string syntaxNum(char str[]) {
 
 
 
-string syntaxOp() {
+string analyzeOp() {
 
 	string str;
 
@@ -494,7 +435,7 @@ void lexer(int& j) {
 			myfile << endl;
 			if (print)
 				cout << "\nToken:\tOPERATOR" << "\t\tLexme:\t" << testChar << endl;
-			myfile << syntaxOp();
+			myfile << analyzeOp();
 			flag = 1;
 			return;
 		}
@@ -511,7 +452,7 @@ void lexer(int& j) {
 			myfile << endl;
 			if (print)
 				cout << "\nToken:\tSEPARATOR" << "\t\tLexme:\t" << testChar << endl;
-			myfile << syntaxSep();
+			myfile << analyzeSep();
 			flag = 1;
 			return;
 		}
@@ -599,7 +540,7 @@ void lexer(int& j) {
 			myfile << endl;
 			if (print)
 				cout << "\nToken:\tKEYWORD" << "\t\t\tLexme:\t" << testWord << endl;
-			myfile << syntaxKey();
+			myfile << analyzeKey();
 		}
 		else {
 			myfile << "\n\nToken:\tIDENTIFIER" << "\t\tLexme:\t" << testWord;
@@ -608,7 +549,7 @@ void lexer(int& j) {
 			myfile << endl;
 			if (print)
 				cout << "\nToken:\tIDENTIFIER" << "\t\tLexme:\t" << testWord << endl;
-			myfile << syntaxId();
+			myfile << addId();
 		}
 		flag = 0;
 	}
@@ -625,8 +566,8 @@ void lexer(int& j) {
 
 int main() {
 
-	myfile.open("Syntax Analysis.txt");    //makes file named Syntax Analysis
-	myfile << "            SYNTAX ANALYSIS" << endl;
+	myfile.open("FinalOutput.txt");    //makes file named Final Output
+	myfile << "            Final Output" << endl;
 	myfile << "----------------------------------------------------" << endl;
 
 	if (!file.is_open()) {
